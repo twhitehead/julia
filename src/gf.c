@@ -1857,7 +1857,8 @@ jl_code_instance_t *jl_compile_method_internal(jl_method_instance_t *mi, size_t 
             }
         }
         jl_code_info_t *src = jl_code_for_interpreter(mi);
-        if (!jl_code_requires_compiler(src)) {
+        if (!jl_code_requires_compiler(src) /*&& !jl_code_has_loops(src) &&
+            jl_rettype_inferred(mi, world, world) == jl_nothing*/) {
             jl_code_instance_t *codeinst = jl_set_method_inferred(mi, (jl_value_t*)jl_any_type, NULL, NULL,
                 0, 1, ~(size_t)0);
             jl_atomic_store_release(&codeinst->invoke, jl_fptr_interpret_call);
@@ -1884,7 +1885,7 @@ jl_code_instance_t *jl_compile_method_internal(jl_method_instance_t *mi, size_t 
                  jl_symbol_name(mi->def.method->name)[0] != '@') {
             // don't bother with typeinf on macros or toplevel thunks
             // but try to infer everything else
-            src = jl_type_infer(mi, world, 0);
+            //src = jl_type_infer(mi, world, 0);
         }
         codeinst = jl_compile_linfo(mi, src, world, &jl_default_cgparams);
         if (!codeinst) {
